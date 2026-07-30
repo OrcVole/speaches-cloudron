@@ -1,0 +1,52 @@
+{
+  "id": "io.github.orcvole.speaches",
+  "title": "Speaches",
+  "tagline": "Self-hosted speech to text and text to speech with OpenAI-compatible APIs",
+  "version": "0.1.0",
+  "upstreamVersion": "0.9.0-rc.3",
+  "description": "file://DESCRIPTION.md",
+  "changelog": "file://CHANGELOG.md",
+  "author": "OrcVole",
+  "packagerName": "OrcVole",
+  "packagerUrl": "https://github.com/OrcVole/speaches-cloudron",
+  "contactEmail": "Most+github@OrcadianVole.com",
+  "website": "https://github.com/OrcVole/speaches-cloudron",
+  "icon": "file://logo.png",
+  "iconUrl": "https://raw.githubusercontent.com/OrcVole/speaches-cloudron/main/logo.png",
+  "tags": [
+    "speech",
+    "whisper",
+    "tts",
+    "stt",
+    "ai",
+    "audio"
+  ],
+  "mediaLinks": [
+    "https://raw.githubusercontent.com/OrcVole/speaches-cloudron/main/screenshots/overview.png"
+  ],
+  "httpPort": 8000,
+  "healthCheckPath": "/healthz",
+  "addons": {
+    "localstorage": {}
+  },
+  "persistentDirs": [
+    "/var/lib/speaches"
+  ],
+  "memoryLimit": 4294967296,
+  "minBoxVersion": "9.1.0",
+  "manifestVersion": 2,
+  "configurePath": "/",
+  "optionalSso": true,
+  "postInstallMessage": "file://POSTINSTALL.md",
+  "checklist": {
+    "apikey": {
+      "message": "Get your API key: open a Terminal for this app (the `>_` button) and run `cat /app/data/.secrets/keys.env`. Send it as `Authorization: Bearer <key>` to the /v1 endpoints."
+    },
+    "uikey": {
+      "message": "The web UI at / is open to anyone as a shell: it cannot transcribe or synthesise anything without a key. Paste the same API key into the UI's key box once per browser."
+    },
+    "models": {
+      "message": "Models download on demand into /var/lib/speaches. The default STT and TTS models preload on first boot: watch the app's Logs for progress before relying on them."
+    }
+  }
+}

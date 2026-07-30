@@ -1,0 +1,13 @@
+# Default-deny: ignore everything, then allowlist exactly what the build
+# needs. Keeps phase-notes/, docs/, test scripts, and anything else out of
+# the build context. See docs/decisions/ for why each of these exists;
+# www/ is reserved for the ADR 0005 option B fallback landing page and is
+# not present in the v1 scaffold.
+*
+
+!Dockerfile
+!start.sh
+!nginx.conf
+!www/
+!LICENSE
+!NOTICE

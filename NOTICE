@@ -1,0 +1,22 @@
+Speaches Cloudron package: third-party notices
+================================================
+
+Application
+-----------
+Speaches is developed by Fedir Zadniprovskyi and contributors, and is
+distributed under the MIT licence. See LICENSE for the full text. This
+package builds a Cloudron-compatible image around the unmodified upstream
+application and adds only the Cloudron integration layer (manifest, start
+script, and reverse proxy configuration).
+
+logo.png
+--------
+Source: the GitHub organisation avatar of speaches-ai
+(https://github.com/speaches-ai), retrieved 2026-07-30. An archived copy of
+the original avatar is kept in the maintainer's private working notes, not
+in this repository.
+
+Upstream has no separately authored application logo or icon. The
+organisation avatar is the only project-specific visual mark available.
+logo.png is a proportional resize of that avatar to the packaging icon
+size, with no recolouring, redrawing, or other modification.

@@ -1,0 +1,19 @@
+# Local and private working notes. Never published.
+phase-notes/
+.claude/
+.anonymize-list
+
+# Secrets and environment files.
+.env
+.env.*
+*.secret
+secrets
+*token*.txt
+
+# Build artefacts and logs.
+*.tar
+*.log
+
+# Session-local planning documents that predate the repository.
+*foundation*.md
+WIRING-NOTES.md
