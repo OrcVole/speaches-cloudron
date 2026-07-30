@@ -176,6 +176,13 @@ else
   # above are pinned, when the path's content is expected to be stable.
   declare -A ML_FALSE_POSITIVE_PATHS=(
     # [/app/code/venv/lib/python3.12/site-packages/PACKAGE/FILE]="why this exact path is not a secret"
+    #
+    # Populated 2026-07-31 from the first real image scan. Both entries are
+    # upstream library source shipped by pip, identical in every install of
+    # the same version, and carry no secret of ours. Verified by reading the
+    # flagged line in each file rather than by assuming the package is benign.
+    [/app/code/venv/lib/python3.12/site-packages/PIL/ImageFont.py]="Pillow embeds its default bitmap font as a base64 blob in source; the blob matches the long-base64 shape pattern"
+    [/app/code/venv/lib/python3.12/site-packages/cryptography/hazmat/primitives/serialization/ssh.py]="the literal string -----BEGIN OPENSSH PRIVATE KEY----- is a parser constant in cryptography's own source, not a key"
   )
   ml_allowlisted=0
   for p in "${!ML_FALSE_POSITIVE_PATHS[@]}"; do
