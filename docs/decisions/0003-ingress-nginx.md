@@ -42,6 +42,19 @@ nginx also earns its place for other reasons:
 - A control point for the auth topology fallback (ADR 0005 option B needs a
   landing page at / if the UI is disabled).
 
+## Empirical addendum (phase 1 proofs, 2026-07-30)
+
+- Preload cost measured: with PRELOAD_MODELS set to one small model, first
+  HTTP response came at 27.6 s against a 2.4 s empty-cache baseline. The
+  /healthz carve-out below is load-bearing for fresh installs and clones.
+- Gradio self-call trap: when LOOPBACK_HOST_URL is unset, the Gradio app
+  builds its own backend URL from the inbound Host header, so an external
+  port that differs from the internal one breaks every UI action even with
+  a valid key. This nginx design (8000 external, 8001 internal) has that
+  exact shape. start.sh must set LOOPBACK_HOST_URL to the internal address
+  (http://127.0.0.1:8001), and the UI smoke must run through nginx rather
+  than against uvicorn directly, or the trap stays hidden.
+
 ## Decision (proposed)
 
 Ship the thin nginx front end on the manifest httpPort (8000 external,

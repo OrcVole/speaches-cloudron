@@ -35,7 +35,10 @@ gotcha 85, inverted. vLLM over-claimed a namespace; Speaches claims none.
   (PRELOAD_MODELS='["Systran/faster-whisper-small", ...]', same form as
   ALLOW_ORIGINS). Also forced: API_KEY (from keys.env), ENABLE_UI (from
   SPEECH_UI), LOG_LEVEL=info (the debug default dumps the whole config to
-  logs), and the telemetry opt-outs already present in the upstream image
+  logs), LOOPBACK_HOST_URL=http://127.0.0.1:8001 (mandatory: proven in the
+  phase 1 proofs that Gradio otherwise derives its self-call URL from the
+  inbound Host header and breaks behind any port remap), and the telemetry
+  opt-outs already present in the upstream image
   (HF_HUB_DISABLE_TELEMETRY, DO_NOT_TRACK, GRADIO_ANALYTICS_ENABLED=False,
   PYANNOTE_METRICS_ENABLED=0).
 - One more reason SPEECH_ beats SPEACHES_ as our prefix: upstream already
