@@ -96,10 +96,47 @@ revision 2:
 | API key must survive byte identical | sha256 prefix `fc4ad461d357f2dd35fc26e2510c515b` |
 | Model cache must survive an update | 1677310530 bytes on `/var/lib/speaches` |
 
-## Gate 4, memory (not yet measured)
+## Gate 2 rerun, revision 2 (PASS)
 
-The revision 1 figures are void: they measured a container thrashing at its
-limit with the wrong quantisation. `memoryLimit` must be set from a revision
-2 measurement of the worst case, meaning speech to text and text to speech
-models resident simultaneously during real inference, with headroom, and
-never from a ratio.
+Identical audio, model and hardware as the revision 1 failure. Timings are
+the application's own log line, not the HTTP request, so model load is
+excluded.
+
+| Run | Transcribe 4.9 s of audio |
+| --- | --- |
+| first after load | 60.4 s |
+| steady state | 47.9 s |
+| steady state | 45.0 s |
+
+Against 199 to 236 s on revision 1: roughly four times faster, from the
+quantisation change alone. Text to speech returned 129102 bytes of wav in
+15.8 s for a short phrase.
+
+Honest framing for user-facing text: on this rig (AVX2, no AVX-512, 12
+cores allotted) `faster-whisper-small` transcribes at roughly nine to ten
+times slower than real time. That is useful for short clips and batch work
+and is not real-time dictation.
+
+## Gate 4, memory (revision 2)
+
+Measured with the full default model set resident (`faster-whisper-small`,
+Kokoro and the Silero VAD) immediately after real inference in both
+directions.
+
+| Invariant | Idle after boot | Loaded, after inference |
+| --- | --- | --- |
+| `memory.current` | 356 MB (rev 1, preload only) | 1443758080 bytes, 1.34 GiB |
+| `memory.peak` | n/a | 1463017472 bytes, 1.36 GiB |
+| `oom_kill` | 0 | 0 |
+| largest process | uvicorn | uvicorn, 1489996 KB RSS |
+
+`memoryLimit` set to 3221225472 bytes (3 GiB), which puts the measured peak
+at 45.4 percent. The headroom is deliberate rather than superstitious: the
+measurement is single-request, and concurrency, a large audio upload, or an
+operator selecting a bigger model all push the peak up. It is not sized to
+the observed peak, which is the mistake the revision 1 limit made in the
+other direction.
+
+Note what revision 1 proved incidentally: a container at 95 percent of its
+limit was not OOM killed, it thrashed. An absent `oom_kill` counter is
+therefore not evidence that a memory limit is adequate.
