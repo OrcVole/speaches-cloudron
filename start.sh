@@ -195,39 +195,62 @@ export MKL_NUM_THREADS="${THREADS}"
 # throughput is what it is. SPEECH_COMPUTE_TYPE overrides everything;
 # CTranslate2 accepts int8, int8_float32, int8_float16, int8_bfloat16,
 # int16, float16, bfloat16, float32 and default.
-CPU_FLAGS="$(grep -m1 '^flags' /proc/cpuinfo 2>/dev/null || echo '')"
-has_flag() { [[ " ${CPU_FLAGS} " == *" $1 "* ]]; }
+# Cloudron is x86_64 only, so this detects x86 feature flags and nothing
+# else. The non-x86 branch is not ARM support, it is only a graceful
+# degradation path so the script cannot fail on an unexpected host.
+#
+# Forward compatibility is by DEGRADATION, not by allowlist. x86 feature
+# flags are additive: a CPU released years from now still reports sse4_1
+# and avx2 alongside whatever is new. So the rule is "int8 unless this
+# silicon is positively known to be too old for it", which means an
+# unrecognised future part gets the fast path automatically instead of
+# being punished for being unknown. The tier labels exist only to make the
+# log line informative; adding one is cosmetic and never changes which
+# quantisation an existing machine gets.
+ARCH="$(uname -m 2>/dev/null || echo unknown)"
+CPU_FLAGS=" $(grep -m1 '^flags' /proc/cpuinfo 2>/dev/null | cut -d: -f2-) "
+has_flag() { [[ "${CPU_FLAGS}" == *" $1 "* ]]; }
 
-if has_flag avx512_vnni; then
-  ISA_TIER="avx512-vnni"; AUTO_COMPUTE=int8
-elif has_flag avx_vnni; then
-  ISA_TIER="avx-vnni"; AUTO_COMPUTE=int8
-elif has_flag avx512f; then
-  ISA_TIER="avx512"; AUTO_COMPUTE=int8
-elif has_flag avx2; then
-  ISA_TIER="avx2"; AUTO_COMPUTE=int8
-elif has_flag avx; then
-  ISA_TIER="avx"; AUTO_COMPUTE=int8
+AUTO_COMPUTE=int8   # the default for everything not demonstrably too old
+if [[ "${ARCH}" != "x86_64" && "${ARCH}" != "amd64" ]]; then
+  ISA_TIER="${ARCH}-unrecognised"
+# Ordered newest first, for the label only. AMX-INT8 (Sapphire Rapids
+# onward) and AVX10 (announced as the successor unifying the AVX-512
+# feature set) sit above the VNNI generations; avxvnniint8 is the newer
+# dedicated int8 dot product.
+elif has_flag amx_int8;    then ISA_TIER="amx-int8"
+elif has_flag avx10_2;     then ISA_TIER="avx10.2"
+elif has_flag avx10_1;     then ISA_TIER="avx10.1"
+elif has_flag avx10;       then ISA_TIER="avx10"
+elif has_flag avxvnniint8; then ISA_TIER="avx-vnni-int8"
+elif has_flag avx512_vnni; then ISA_TIER="avx512-vnni"
+elif has_flag avx_vnni;    then ISA_TIER="avx-vnni"
+elif has_flag avx512f;     then ISA_TIER="avx512"
+elif has_flag avx2;        then ISA_TIER="avx2"
+elif has_flag avx;         then ISA_TIER="avx"
 elif has_flag sse4_1; then
   # CTranslate2's documented floor. int8 kernels exist but are poorly
-  # served here; int8_float32 keeps accumulation in float and is the
-  # safer choice on old silicon.
+  # served here; int8_float32 keeps accumulation in float.
   ISA_TIER="sse4.1"; AUTO_COMPUTE=int8_float32
 else
   # Below the floor CTranslate2 may not run at all. Do not silently pick
-  # something clever: say so, and let the application fail honestly.
+  # something clever: say so, and let it fail honestly.
   ISA_TIER="below-sse4.1"; AUTO_COMPUTE=float32
 fi
 
 export WHISPER__COMPUTE_TYPE="${SPEECH_COMPUTE_TYPE:-${AUTO_COMPUTE}}"
 
-if [[ "${ISA_TIER}" == "below-sse4.1" ]]; then
-  echo "==> [start] WARNING: no SSE 4.1 detected. CTranslate2 requires it;"
-  echo "==> [start]          speech to text is unlikely to work on this host."
-elif [[ "${ISA_TIER}" == "sse4.1" || "${ISA_TIER}" == "avx" ]]; then
-  echo "==> [start] NOTE: ${ISA_TIER} only. Transcription will be markedly"
-  echo "==> [start]       slower than on AVX2 or newer silicon."
-fi
+case "${ISA_TIER}" in
+  below-sse4.1)
+    echo "==> [start] WARNING: no SSE 4.1 detected. CTranslate2 requires it;"
+    echo "==> [start]          speech to text is unlikely to work on this host." ;;
+  sse4.1|avx)
+    echo "==> [start] NOTE: ${ISA_TIER} only. Transcription will be markedly"
+    echo "==> [start]       slower than on AVX2 or newer silicon." ;;
+  *-unrecognised)
+    echo "==> [start] NOTE: non-x86_64 host, which Cloudron does not support."
+    echo "==> [start]       Assuming int8; override with SPEECH_COMPUTE_TYPE." ;;
+esac
 
 # 8. Informational logging only. Never the key itself, presence only.
 if [[ -r /sys/fs/cgroup/memory.max ]]; then
