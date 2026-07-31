@@ -205,3 +205,50 @@ AVX-512 and was quiet. The production rig is AVX2 and heavily shared. No
 throughput promise should be made for a shared server, and the honest
 user-facing statement is that performance depends overwhelmingly on host
 load and instruction set.
+
+## Versions channel, the stranger install path (PASS, 2026-07-31)
+
+The only test that proves what a stranger experiences. Installed with
+nothing but the public URL:
+
+```
+cloudron install --versions-url \
+  https://raw.githubusercontent.com/OrcVole/speaches-cloudron/main/CloudronVersions.json \
+  --location <throwaway>
+```
+
+| Invariant | Proof |
+| --- | --- |
+| Resolves and installs from the public URL alone | "App is installed." |
+| Image pinned by digest, not by tag | container image is `...@sha256:37c33330...` |
+| Manifest values actually applied | `memory.max` was 5368709120, the manifest figure |
+| Hardware detection works on the target | boot log `cpu isa : avx2`, `compute : int8` |
+| No restart loop | `RestartCount` 0 |
+| Health green | `/healthz` 200 |
+
+Torn down afterwards.
+
+### Schema trap, cost about an hour
+
+The first three attempts failed with:
+
+```
+Failed to get community app: 404 message: Could not resolve
+CloudronVersions.json from URL
+```
+
+The URL was fine throughout: it returned 200 with the right bytes from
+both the workstation and the rig. The error names the URL, which sends you
+checking DNS, raw.githubusercontent caching, and whether the argument wants
+a file, a directory or a repository. All three argument forms fail
+identically, which is the clue that the argument is not the problem.
+
+The real cause is schema. `dockerImage` must live INSIDE the embedded
+manifest, not as a sibling field of it, and a top-level `stable` key must
+be present. Comparing against a known-good published versions file found it
+in one step, after the URL hunt found nothing.
+
+`test/sync-versions.py` now generates the file from `CloudronManifest.json`,
+places `dockerImage` correctly, writes `stable`, and refuses to emit a file
+that still carries a `TBD` digest. Run `test/sync-versions.py --check` as a
+release gate.
