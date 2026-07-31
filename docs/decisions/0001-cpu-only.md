@@ -43,10 +43,49 @@ later.
 - [ ] Record audio-seconds-per-second for the default STT model and first
       token latency for TTS at Gate 4.
 
-## Measured on the rig, 2026-07-31 (Gate 2)
+## Quantisation, measured properly (2026-07-31)
 
-The single most important CPU finding of the round, and it was invisible
-locally. Upstream's default `compute_type` resolves to float32 on CPU. With
+Upstream's `compute_type` resolves to float32 on CPU. The package overrides
+this, selecting from the CPU's own feature flags at boot.
+
+The first evidence for that change was taken on the rig and claimed a
+fourfold speed-up. THAT CLAIM IS RETRACTED: the rig was carrying a load
+average of 51.5 on 12 cores with neighbouring containers taking 412 and 349
+percent CPU, so those timings measured the neighbours rather than the
+package.
+
+Re-measured under control, on a quiet machine (load 1.5 to 2.4 on 32 cores),
+with the two quantisations running in otherwise identical containers and
+requests INTERLEAVED between them so that any shared load affects both arms
+equally. Timings are the application's own, excluding model load:
+
+| Quantisation | Run 1 (cold) | Run 2 | Run 3 |
+| --- | --- | --- | --- |
+| int8 | 1.75 s | 1.01 s | 1.00 s |
+| float32 | 2.52 s | 1.49 s | 1.44 s |
+
+int8 is roughly 1.4 times faster, consistently and in both the cold and warm
+cases, for the same 4.9 second clip. That is a real and reproducible
+advantage, and much smaller than first reported. It is kept as the default
+because it is faster, because it uses materially less memory for the same
+weights, and because there was no accuracy difference on the test phrase.
+
+Absolute throughput on that quiet machine was roughly three to five times
+FASTER than real time, which is worth stating plainly because the rig
+figures suggested the opposite. The package is not slow; the rig it was
+first measured on was saturated.
+
+Honest framing for user-facing text: performance depends overwhelmingly on
+how busy the host is and on its instruction set. No throughput promise
+should be made for a shared server. See `docs/DEBUGGING.md`.
+
+## Superseded rig measurement, kept for the record (2026-07-31)
+
+
+RETRACTED as a causal claim, kept because the retraction is instructive.
+These figures were taken on a saturated rig without recording its load, and
+the fourfold difference they appear to show is not reproducible under
+control. Upstream's default `compute_type` resolves to float32 on CPU. With
 that default, `faster-whisper-small` transcribed 4.9 seconds of audio in 199
 to 236 seconds and drove the container to 4.07 GB, which is 94.8 percent of
 a 4 GiB limit. Switching CTranslate2 to int8, same audio, same model, same

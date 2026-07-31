@@ -178,14 +178,30 @@ Rules that survive the retraction:
    recording the load average alongside it. This round produced three
    contradictory timings for identical work and briefly believed each one.
 
-## Outstanding: performance must be re-measured
+## Performance, re-measured under control (2026-07-31)
 
-No trustworthy throughput figure for this package exists yet. The
-int8-versus-float32 comparison that drove the quantisation change was also
-taken under uncontrolled load, so its DIRECTION is credible (the gap was
-roughly fourfold and consistent) but its MAGNITUDE is not established.
+Method: two otherwise identical containers, same CPU and memory allocation,
+differing only in quantisation, with requests INTERLEAVED between them so
+shared load affects both arms equally. Quiet machine, load average 1.5 to
+2.4 on 32 cores, recorded before and after. Same 4.9 second clip used in
+every earlier measurement. Timings are the application's own log line, so
+model load is excluded.
 
-To do properly: interleave int8 and float32 requests against two otherwise
-identical containers so that load affects both equally, or measure at a
-quiet period, recording `uptime` alongside every timing. Until then, no
-performance claim should appear in any user-facing text.
+| Quantisation | Cold | Warm | Warm |
+| --- | --- | --- | --- |
+| int8 | 1.75 s | 1.01 s | 1.00 s |
+| float32 | 2.52 s | 1.49 s | 1.44 s |
+
+int8 is about 1.4 times faster, reproducibly. The earlier fourfold claim is
+retracted; it was rig load.
+
+Note the absolute figures: 4.9 seconds of audio transcribed in about 1
+second is three to five times faster than real time. The package is not
+slow. The rig on which it first appeared slow was carrying a load average
+of 51.5 on 12 cores.
+
+Caveat that must accompany any quotation of these numbers: this machine has
+AVX-512 and was quiet. The production rig is AVX2 and heavily shared. No
+throughput promise should be made for a shared server, and the honest
+user-facing statement is that performance depends overwhelmingly on host
+load and instruction set.
