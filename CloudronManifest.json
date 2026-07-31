@@ -32,7 +32,7 @@
   "persistentDirs": [
     "/var/lib/speaches"
   ],
-  "memoryLimit": 3221225472,
+  "memoryLimit": 5368709120,
   "minBoxVersion": "9.1.0",
   "manifestVersion": 2,
   "configurePath": "/",

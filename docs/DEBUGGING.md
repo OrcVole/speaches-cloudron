@@ -130,13 +130,37 @@ directions.
 | `oom_kill` | 0 | 0 |
 | largest process | uvicorn | uvicorn, 1489996 KB RSS |
 
-`memoryLimit` set to 3221225472 bytes (3 GiB), which puts the measured peak
-at 45.4 percent. The headroom is deliberate rather than superstitious: the
-measurement is single-request, and concurrency, a large audio upload, or an
-operator selecting a bigger model all push the peak up. It is not sized to
-the observed peak, which is the mistake the revision 1 limit made in the
-other direction.
+### The sizing mistake, and the correction
 
-Note what revision 1 proved incidentally: a container at 95 percent of its
-limit was not OOM killed, it thrashed. An absent `oom_kill` counter is
-therefore not evidence that a memory limit is adequate.
+`memoryLimit` was first set to 3 GiB from that peak figure. That was wrong,
+and the error is worth recording because it is not obvious.
+
+Re-measured at a 3 GiB limit, the SAME 4.9 second clip took 128 to 153
+seconds, against 45 to 48 seconds at 4 GiB. Three times slower, with
+`oom_kill` still 0. The cgroup breakdown explains it:
+
+| Counter | Value | Meaning |
+| --- | --- | --- |
+| `anon` | 1158303744 (1.08 GiB) | the process itself |
+| `file` | 1470300160 (1.37 GiB) | page cache holding the model files |
+| `memory.current` | 2691866624 (2.51 GiB) | the real working set |
+| `memory.peak` | 3221225472 | exactly the limit, meaning it pressed against the ceiling |
+
+A model server needs its model files resident in PAGE CACHE, not merely
+its own heap. Squeeze the cgroup and the kernel evicts that cache, so every
+inference re-reads the weights from disk. Nothing is OOM killed and nothing
+logs an error; throughput simply collapses.
+
+`memoryLimit` is therefore 5368709120 bytes (5 GiB), putting the measured
+2.51 GiB working set at 49 percent and leaving room for the page cache to
+stay warm alongside concurrency and larger uploads.
+
+Two rules fall out of this, both of which cost this round real time:
+
+1. Size a model server from `anon` plus `file` in `memory.stat`, never from
+   `memory.peak` alone, and never from the process RSS alone.
+2. An `oom_kill` counter of 0 is not evidence that a memory limit is
+   adequate. Revision 1 sat at 95 percent of its limit and thrashed rather
+   than dying, and the 3 GiB attempt did the same. The honest test of a
+   memory limit for this class of application is a throughput measurement,
+   not a survival check.
