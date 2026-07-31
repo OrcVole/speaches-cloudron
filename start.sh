@@ -177,6 +177,58 @@ THREADS="${SPEECH_NUM_THREADS:-${CPUS}}"
 export OMP_NUM_THREADS="${THREADS}"
 export MKL_NUM_THREADS="${THREADS}"
 
+# CTranslate2 quantisation. This is the single largest performance and memory
+# lever in the whole package, measured on the rig at Gate 2 rather than
+# assumed: with the upstream default (compute_type "default", which resolves
+# to float32 on CPU) whisper-small transcribed 4.9 seconds of audio in 199
+# seconds and pushed the container to 4.07 GB, which is 95 percent of a 4 GiB
+# limit and thrashing. With int8 the SAME audio, model and hardware took 50
+# seconds and 671 MB. Four times faster, six times smaller, no accuracy
+# difference observed on the test phrase.
+#
+# The default is therefore chosen from the CPU's own capabilities rather
+# than hardcoded, because the right quantisation depends on which
+# instructions the silicon actually has. CTranslate2 needs only SSE 4.1 to
+# run, but its int8 path is dramatically faster where VNNI (int8 dot
+# product) instructions exist, and merely faster elsewhere. Detected once
+# at boot and logged, so an operator reading the logs can see why their
+# throughput is what it is. SPEECH_COMPUTE_TYPE overrides everything;
+# CTranslate2 accepts int8, int8_float32, int8_float16, int8_bfloat16,
+# int16, float16, bfloat16, float32 and default.
+CPU_FLAGS="$(grep -m1 '^flags' /proc/cpuinfo 2>/dev/null || echo '')"
+has_flag() { [[ " ${CPU_FLAGS} " == *" $1 "* ]]; }
+
+if has_flag avx512_vnni; then
+  ISA_TIER="avx512-vnni"; AUTO_COMPUTE=int8
+elif has_flag avx_vnni; then
+  ISA_TIER="avx-vnni"; AUTO_COMPUTE=int8
+elif has_flag avx512f; then
+  ISA_TIER="avx512"; AUTO_COMPUTE=int8
+elif has_flag avx2; then
+  ISA_TIER="avx2"; AUTO_COMPUTE=int8
+elif has_flag avx; then
+  ISA_TIER="avx"; AUTO_COMPUTE=int8
+elif has_flag sse4_1; then
+  # CTranslate2's documented floor. int8 kernels exist but are poorly
+  # served here; int8_float32 keeps accumulation in float and is the
+  # safer choice on old silicon.
+  ISA_TIER="sse4.1"; AUTO_COMPUTE=int8_float32
+else
+  # Below the floor CTranslate2 may not run at all. Do not silently pick
+  # something clever: say so, and let the application fail honestly.
+  ISA_TIER="below-sse4.1"; AUTO_COMPUTE=float32
+fi
+
+export WHISPER__COMPUTE_TYPE="${SPEECH_COMPUTE_TYPE:-${AUTO_COMPUTE}}"
+
+if [[ "${ISA_TIER}" == "below-sse4.1" ]]; then
+  echo "==> [start] WARNING: no SSE 4.1 detected. CTranslate2 requires it;"
+  echo "==> [start]          speech to text is unlikely to work on this host."
+elif [[ "${ISA_TIER}" == "sse4.1" || "${ISA_TIER}" == "avx" ]]; then
+  echo "==> [start] NOTE: ${ISA_TIER} only. Transcription will be markedly"
+  echo "==> [start]       slower than on AVX2 or newer silicon."
+fi
+
 # 8. Informational logging only. Never the key itself, presence only.
 if [[ -r /sys/fs/cgroup/memory.max ]]; then
   echo "==> [start] cgroup memory.max=$(cat /sys/fs/cgroup/memory.max) bytes"
@@ -191,6 +243,8 @@ else
   echo "==> [start] preload   : on ${PRELOAD_MODELS}"
 fi
 echo "==> [start] threads   : ${THREADS} (omp/mkl)"
+echo "==> [start] cpu isa   : ${ISA_TIER}"
+echo "==> [start] compute   : ${WHISPER__COMPUTE_TYPE} (ctranslate2 quantisation)"
 echo "==> [start] api key   : $( [[ -s "${KEYS_ENV}" ]] && echo 'present' || echo 'MISSING' )"
 
 # 9. Launch. model_aliases.json and realtime-console/dist are read by
