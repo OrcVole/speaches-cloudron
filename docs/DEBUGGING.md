@@ -130,37 +130,62 @@ directions.
 | `oom_kill` | 0 | 0 |
 | largest process | uvicorn | uvicorn, 1489996 KB RSS |
 
-### The sizing mistake, and the correction
+### Sizing, and a retracted explanation
 
-`memoryLimit` was first set to 3 GiB from that peak figure. That was wrong,
-and the error is worth recording because it is not obvious.
+`memoryLimit` was first set to 3 GiB from the peak figure, then raised to 5
+GiB after the same clip appeared to take three times longer at 3 GiB. The
+RAISE IS KEPT, but the explanation offered for it has been RETRACTED, and
+the retraction matters more than the number.
 
-Re-measured at a 3 GiB limit, the SAME 4.9 second clip took 128 to 153
-seconds, against 45 to 48 seconds at 4 GiB. Three times slower, with
-`oom_kill` still 0. The cgroup breakdown explains it:
+What was claimed: that a tight cgroup evicted the model files from page
+cache, so every inference re-read weights from disk.
 
-| Counter | Value | Meaning |
-| --- | --- | --- |
-| `anon` | 1158303744 (1.08 GiB) | the process itself |
-| `file` | 1470300160 (1.37 GiB) | page cache holding the model files |
-| `memory.current` | 2691866624 (2.51 GiB) | the real working set |
-| `memory.peak` | 3221225472 | exactly the limit, meaning it pressed against the ceiling |
+Why that is not supported: a later run at the 5 GiB limit, with memory
+peaking at 2814689280 bytes (2.62 GiB, only 52 percent of the limit and
+therefore under no pressure at all) was ALSO slow, at 153 to 207 seconds.
+If memory pressure were the cause, that run would have been fast.
 
-A model server needs its model files resident in PAGE CACHE, not merely
-its own heap. Squeeze the cgroup and the kernel evicts that cache, so every
-inference re-reads the weights from disk. Nothing is OOM killed and nothing
-logs an error; throughput simply collapses.
+The confound, which should have been controlled from the first measurement:
+the rig carries 84 containers and its load average was 51.5 on 12 cores,
+with individual neighbours consuming 412 and 349 percent CPU. Every
+wall-clock timing taken on this rig is therefore a measurement of whatever
+else was running at that moment, not of this package. The apparent
+differences between 45, 128 and 153 second runs are within the noise that
+load of that magnitude produces.
 
-`memoryLimit` is therefore 5368709120 bytes (5 GiB), putting the measured
-2.51 GiB working set at 49 percent and leaving room for the page cache to
-stay warm alongside concurrency and larger uploads.
+| Counter at the 5 GiB limit | Value |
+| --- | --- |
+| `anon` | 839847936 (0.78 GiB), the process itself |
+| `file` | 1690976256 (1.57 GiB), page cache holding model files |
+| `memory.current` | 2597695488 (2.42 GiB) |
+| `memory.peak` | 2814689280 (2.62 GiB), 52 percent of the limit |
+| `oom_kill` | 0 |
 
-Two rules fall out of this, both of which cost this round real time:
+What survives, and why 5 GiB is still the right number: the page cache
+figure is a measured fact independent of timing. The cgroup is charged
+about 1.6 GiB of page cache for the model files on top of roughly 0.8 GiB
+of process memory, giving a real working set near 2.6 GiB. Sizing from
+`memory.peak` alone, or from process RSS alone, would have missed the
+larger half of that. 5 GiB puts the measured peak at 52 percent.
 
-1. Size a model server from `anon` plus `file` in `memory.stat`, never from
-   `memory.peak` alone, and never from the process RSS alone.
+Rules that survive the retraction:
+
+1. Size a model server from `anon` plus `file` in `memory.stat`, not from
+   `memory.peak` alone and not from RSS alone.
 2. An `oom_kill` counter of 0 is not evidence that a memory limit is
-   adequate. Revision 1 sat at 95 percent of its limit and thrashed rather
-   than dying, and the 3 GiB attempt did the same. The honest test of a
-   memory limit for this class of application is a throughput measurement,
-   not a survival check.
+   adequate.
+3. NEVER quote a wall-clock performance number from a shared rig without
+   recording the load average alongside it. This round produced three
+   contradictory timings for identical work and briefly believed each one.
+
+## Outstanding: performance must be re-measured
+
+No trustworthy throughput figure for this package exists yet. The
+int8-versus-float32 comparison that drove the quantisation change was also
+taken under uncontrolled load, so its DIRECTION is credible (the gap was
+roughly fourfold and consistent) but its MAGNITUDE is not established.
+
+To do properly: interleave int8 and float32 requests against two otherwise
+identical containers so that load affects both equally, or measure at a
+quiet period, recording `uptime` alongside every timing. Until then, no
+performance claim should appear in any user-facing text.
