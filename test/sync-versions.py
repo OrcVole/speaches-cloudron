@@ -30,9 +30,23 @@ def build(version):
             if not os.path.exists(path):
                 sys.exit(f"missing {path}, referenced by {field}")
             embedded[field] = open(path).read().strip()
+
+    # dockerImage belongs INSIDE the embedded manifest, not beside it.
+    # An entry-level dockerImage is silently ignored and the box then
+    # rejects the whole file with a 404 "Could not resolve
+    # CloudronVersions.json from URL", which names the URL rather than the
+    # schema and sends you hunting the wrong problem entirely.
+    image = entry.pop("dockerImage", None) or embedded.get("dockerImage")
+    if not image or image.endswith(":TBD"):
+        sys.exit("dockerImage is unset or still TBD; pin the shipping digest")
+    embedded["dockerImage"] = image
+
     entry["manifest"] = embedded
     versions["versions"][version] = entry
-    return json.dumps(versions, indent=2) + "\n"
+    # Top-level "stable" is required alongside "versions".
+    versions.setdefault("stable", True)
+    ordered = {"stable": versions["stable"], "versions": versions["versions"]}
+    return json.dumps(ordered, indent=2) + "\n"
 
 
 def main():
