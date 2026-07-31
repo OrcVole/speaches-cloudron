@@ -3,7 +3,7 @@
     "0.1.0": {
       "creationDate": "2026-07-30T20:44:22.000Z",
       "ts": 1785444262000,
-      "publishState": "draft",
+      "publishState": "published",
       "dockerImage": "ghcr.io/orcvole/speaches-cloudron@sha256:37c33330a81334b30bdda9d85c36770c69f3d1ffa87e4bf5a947987df63d09f4",
       "manifest": {
         "id": "io.github.orcvole.speaches",
