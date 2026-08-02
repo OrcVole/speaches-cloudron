@@ -1,3 +1,5 @@
+<upstream>0.9.0-rc.3</upstream>
+
 Speaches is a self-hosted speech server with an OpenAI-compatible API. It
 provides speech to text (transcription and translation) and text to speech,
 and can act as a drop-in backend for tools that already speak the OpenAI
