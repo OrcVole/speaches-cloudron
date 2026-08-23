@@ -81,7 +81,6 @@ should be made for a shared server. See `docs/DEBUGGING.md`.
 
 ## Superseded rig measurement, kept for the record (2026-07-31)
 
-
 RETRACTED as a causal claim, kept because the retraction is instructive.
 These figures were taken on a saturated rig without recording its load, and
 the fourfold difference they appear to show is not reproducible under
@@ -104,4 +103,3 @@ rig (AVX2, no AVX-512, 12 cores allotted) transcribes at roughly ten times
 slower than real time with `faster-whisper-small`. That is usable for short
 clips and batch work, and it is not real-time dictation. Say so plainly.
 Operators wanting speed should choose a smaller or distilled model.
-

@@ -13,17 +13,21 @@ on the upstream project's current pace of development.
    `CloudronVersions.json`, once published).
 2. Open a Terminal for the app (the `>_` button in the dashboard) and read
    the generated API key:
+
    ```
    cat /app/data/.secrets/keys.env
    ```
+
 3. Call the API with the key as a bearer token. Example transcription
    request, with `example.com` standing in for the app's real domain:
+
    ```
    curl https://example.com/v1/audio/transcriptions \
      -H "Authorization: Bearer <key>" \
      -F file=@sample.wav \
      -F model=Systran/faster-whisper-small
    ```
+
 4. Alternatively, open the app's domain in a browser to use the playground
    UI, and paste the same key into its key box once per browser.
 
@@ -39,10 +43,12 @@ below).
 
 LibreChat's `librechat.yaml` speech configuration takes full endpoint
 URLs, not a base URL. Point transcription and synthesis at:
+
 ```
 https://example.com/v1/audio/transcriptions
 https://example.com/v1/audio/speech
 ```
+
 Some LibreChat documentation examples show `/v1/audio/synthesize` for the
 speech endpoint. That path does not exist on Speaches, or on OpenAI, and
 is a documentation error. Use `/v1/audio/speech`.

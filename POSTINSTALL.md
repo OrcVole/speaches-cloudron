@@ -3,9 +3,11 @@ OpenAI-compatible speech API at `/v1` and a small playground UI at `/`.
 
 **Your API key** was generated on first run. Open a Terminal for this app
 (the `>_` button) and run:
+
 ```
 cat /app/data/.secrets/keys.env
 ```
+
 Send it as `Authorization: Bearer <key>` with every `/v1` request.
 
 **The playground UI is open to visit but not to use.** Anyone can load `/`,

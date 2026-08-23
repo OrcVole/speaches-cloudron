@@ -9,7 +9,7 @@ at phase 2; operator-approved where marked.
 ## Context (empirical probe plus upstream source, 0.9.0-rc.3)
 
 - Native auth exists: unprefixed API_KEY env; Authorization: Bearer; 403
-  with WWW-Authenticate on /v1/* and /api/* without or with a wrong key.
+  with WWW-Authenticate on /v1/*and /api/* without or with a wrong key.
 - The auth exemptions are documented and intentional upstream: /health,
   /docs, /openapi.json, and the Gradio UI shell. The UI carries its own
   API-key textbox (persisted in browser localStorage): inference through

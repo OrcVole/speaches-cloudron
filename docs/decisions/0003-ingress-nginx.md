@@ -52,7 +52,7 @@ nginx also earns its place for other reasons:
   port that differs from the internal one breaks every UI action even with
   a valid key. This nginx design (8000 external, 8001 internal) has that
   exact shape. start.sh must set LOOPBACK_HOST_URL to the internal address
-  (http://127.0.0.1:8001), and the UI smoke must run through nginx rather
+  (<http://127.0.0.1:8001>), and the UI smoke must run through nginx rather
   than against uvicorn directly, or the trap stays hidden.
 
 ## Decision (proposed)

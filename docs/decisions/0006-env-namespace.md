@@ -18,7 +18,7 @@ gotcha 85, inverted. vLLM over-claimed a namespace; Speaches claims none.
 
 ## Decision (proposed)
 
-- Package-defined operator settings use the SPEECH_ prefix (no upstream
+- Package-defined operator settings use the SPEECH_prefix (no upstream
   field begins with speech_; the obvious future upstream prefix would be
   SPEACHES_, which we deliberately avoid so a future upstream adoption of
   it cannot collide with us). Initial set:
@@ -35,13 +35,13 @@ gotcha 85, inverted. vLLM over-claimed a namespace; Speaches claims none.
   (PRELOAD_MODELS='["Systran/faster-whisper-small", ...]', same form as
   ALLOW_ORIGINS). Also forced: API_KEY (from keys.env), ENABLE_UI (from
   SPEECH_UI), LOG_LEVEL=info (the debug default dumps the whole config to
-  logs), LOOPBACK_HOST_URL=http://127.0.0.1:8001 (mandatory: proven in the
+  logs), LOOPBACK_HOST_URL=<http://127.0.0.1:8001> (mandatory: proven in the
   phase 1 proofs that Gradio otherwise derives its self-call URL from the
   inbound Host header and breaks behind any port remap), and the telemetry
   opt-outs already present in the upstream image
   (HF_HUB_DISABLE_TELEMETRY, DO_NOT_TRACK, GRADIO_ANALYTICS_ENABLED=False,
   PYANNOTE_METRICS_ENABLED=0).
-- One more reason SPEECH_ beats SPEACHES_ as our prefix: upstream already
+- One more reason SPEECH_beats SPEACHES_ as our prefix: upstream already
   uses SPEACHES_BASE_URL (their CLI client) and SPEACHES_LOG_LEVEL (an
   acknowledged hack in main.py error handling). The SPEACHES_ namespace is
   partially occupied; ours is not.
