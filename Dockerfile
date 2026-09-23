@@ -88,6 +88,7 @@ RUN test "$(git rev-parse HEAD)" = "24f209c90218187747a9205f0b84bc06b42ce775" \
 #   2. gr.Blocks(head=...): gradio 6 moved head to launch()/mount_gradio_app(), and mount_gradio_app
 #      overwrites blocks.head with its own argument, so the script defining loadApiKey/saveApiKey
 #      silently vanished and the playground's API key field broke. Pass it through explicitly.
+# Reported upstream as https://github.com/speaches-ai/speaches/issues/678; drop this step once fixed there.
 # Each edit must match exactly once or the build fails; the commit guard above pins the source.
 RUN python3 - <<'PY'
 from pathlib import Path
