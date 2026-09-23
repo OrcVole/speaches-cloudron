@@ -1,63 +1,121 @@
 {
-  "stable": true,
-  "versions": {
-    "0.1.0": {
-      "creationDate": "2026-07-30T20:44:22.000Z",
-      "ts": 1785444262000,
-      "publishState": "published",
-      "manifest": {
-        "id": "io.github.orcvole.speaches",
-        "title": "Speaches",
-        "tagline": "Self-hosted speech to text and text to speech with OpenAI-compatible APIs",
-        "version": "0.1.0",
-        "upstreamVersion": "0.9.0-rc.3",
-        "description": "Speaches is a self-hosted speech server with an OpenAI-compatible API. It\nprovides speech to text (transcription and translation) and text to speech,\nand can act as a drop-in backend for tools that already speak the OpenAI\naudio API.\n\n## What it does\n\n- Speech to text using faster-whisper (CTranslate2), through the\n  `/v1/audio/transcriptions` and `/v1/audio/translations` endpoints.\n- Text to speech using Kokoro and Piper voices, through `/v1/audio/speech`.\n- A realtime API at `/v1/realtime` over WebSocket. Upstream also offers a\n  WebRTC transport for this endpoint, but WebRTC is not supported through\n  the platform proxy because it depends on UDP; use the WebSocket transport\n  instead.\n- A small web playground for trying transcription, synthesis, and audio\n  chat without writing any code.\n\n## Performance\n\nThis package runs on CPU only, because Cloudron does not offer GPU\npassthrough. Small and distilled Whisper models transcribe short and medium\naudio workably on CPU; large models and long files are slow. Exact\nthroughput figures for this package are measured on real hardware rather\nthan assumed, and are recorded in the package documentation once\navailable. Treat any number quoted elsewhere as a starting estimate, not a\nguarantee.\n\n## About the upstream project\n\nSpeaches (formerly faster-whisper-server) is a widely used open source\nproject, with thousands of stars and a large number of image pulls, but\ndevelopment has been quiet since April 2026: the sole maintainer has not\npublished a release in 2026, and community issues note the slow pace\ndirectly. This is not a project that is broken or abandoned in a technical\nsense; the exact version packaged here was verified end to end, on CPU,\nbefore release. Treat it as a stable, working release from a project\nbetween periods of active maintenance, and expect any upstream fix for a\nnewly found problem to take time to arrive, if it arrives at all.\n\n## Licence\n\nSpeaches is MIT licensed. See LICENSE for the full text.",
-        "changelog": "[0.1.0]\n\n- Initial package of Speaches, upstream version 0.9.0-rc.3, CPU inference\n  only.\n- Speech to text (faster-whisper), text to speech (Kokoro, Piper), and the\n  realtime WebSocket API, fronted by an OpenAI-compatible HTTP API.",
-        "author": "OrcVole",
-        "packagerName": "OrcVole",
-        "packagerUrl": "https://github.com/OrcVole/speaches-cloudron",
-        "contactEmail": "Most+github@OrcadianVole.com",
-        "website": "https://github.com/OrcVole/speaches-cloudron",
-        "icon": "file://logo.png",
-        "iconUrl": "https://raw.githubusercontent.com/OrcVole/speaches-cloudron/main/logo.png",
-        "tags": [
-          "speech",
-          "whisper",
-          "tts",
-          "stt",
-          "ai",
-          "audio"
-        ],
-        "mediaLinks": [
-          "https://raw.githubusercontent.com/OrcVole/speaches-cloudron/main/screenshots/overview.png"
-        ],
-        "httpPort": 8000,
-        "healthCheckPath": "/healthz",
-        "addons": {
-          "localstorage": {}
+    "stable": true,
+    "versions": {
+        "0.1.0": {
+            "creationDate": "2026-07-30T20:44:22.000Z",
+            "ts": 1785444262000,
+            "publishState": "published",
+            "manifest": {
+                "id": "io.github.orcvole.speaches",
+                "title": "Speaches",
+                "tagline": "Self-hosted speech to text and text to speech with OpenAI-compatible APIs",
+                "version": "0.1.0",
+                "upstreamVersion": "0.9.0-rc.3",
+                "description": "Speaches is a self-hosted speech server with an OpenAI-compatible API. It\nprovides speech to text (transcription and translation) and text to speech,\nand can act as a drop-in backend for tools that already speak the OpenAI\naudio API.\n\n## What it does\n\n- Speech to text using faster-whisper (CTranslate2), through the\n  `/v1/audio/transcriptions` and `/v1/audio/translations` endpoints.\n- Text to speech using Kokoro and Piper voices, through `/v1/audio/speech`.\n- A realtime API at `/v1/realtime` over WebSocket. Upstream also offers a\n  WebRTC transport for this endpoint, but WebRTC is not supported through\n  the platform proxy because it depends on UDP; use the WebSocket transport\n  instead.\n- A small web playground for trying transcription, synthesis, and audio\n  chat without writing any code.\n\n## Performance\n\nThis package runs on CPU only, because Cloudron does not offer GPU\npassthrough. Small and distilled Whisper models transcribe short and medium\naudio workably on CPU; large models and long files are slow. Exact\nthroughput figures for this package are measured on real hardware rather\nthan assumed, and are recorded in the package documentation once\navailable. Treat any number quoted elsewhere as a starting estimate, not a\nguarantee.\n\n## About the upstream project\n\nSpeaches (formerly faster-whisper-server) is a widely used open source\nproject, with thousands of stars and a large number of image pulls, but\ndevelopment has been quiet since April 2026: the sole maintainer has not\npublished a release in 2026, and community issues note the slow pace\ndirectly. This is not a project that is broken or abandoned in a technical\nsense; the exact version packaged here was verified end to end, on CPU,\nbefore release. Treat it as a stable, working release from a project\nbetween periods of active maintenance, and expect any upstream fix for a\nnewly found problem to take time to arrive, if it arrives at all.\n\n## Licence\n\nSpeaches is MIT licensed. See LICENSE for the full text.",
+                "changelog": "[0.1.0]\n\n- Initial package of Speaches, upstream version 0.9.0-rc.3, CPU inference\n  only.\n- Speech to text (faster-whisper), text to speech (Kokoro, Piper), and the\n  realtime WebSocket API, fronted by an OpenAI-compatible HTTP API.",
+                "author": "OrcVole",
+                "packagerName": "OrcVole",
+                "packagerUrl": "https://github.com/OrcVole/speaches-cloudron",
+                "contactEmail": "Most+github@OrcadianVole.com",
+                "website": "https://github.com/OrcVole/speaches-cloudron",
+                "icon": "file://logo.png",
+                "iconUrl": "https://raw.githubusercontent.com/OrcVole/speaches-cloudron/main/logo.png",
+                "tags": [
+                    "speech",
+                    "whisper",
+                    "tts",
+                    "stt",
+                    "ai",
+                    "audio"
+                ],
+                "mediaLinks": [
+                    "https://raw.githubusercontent.com/OrcVole/speaches-cloudron/main/screenshots/overview.png"
+                ],
+                "httpPort": 8000,
+                "healthCheckPath": "/healthz",
+                "addons": {
+                    "localstorage": {}
+                },
+                "persistentDirs": [
+                    "/var/lib/speaches"
+                ],
+                "memoryLimit": 5368709120,
+                "minBoxVersion": "9.1.0",
+                "manifestVersion": 2,
+                "configurePath": "/",
+                "optionalSso": true,
+                "postInstallMessage": "This app is an **API server with a playground UI**. The domain serves the\nOpenAI-compatible speech API at `/v1` and a small playground UI at `/`.\n\n**Your API key** was generated on first run. Open a Terminal for this app\n(the `>_` button) and run:\n```\ncat /app/data/.secrets/keys.env\n```\nSend it as `Authorization: Bearer <key>` with every `/v1` request.\n\n**The playground UI is open to visit but not to use.** Anyone can load `/`,\nbut it cannot transcribe or synthesise anything without the same key.\nPaste the key into the UI's key box once; your browser remembers it after\nthat.\n\n**First boot is slower than later boots.** The default speech to text and\ntext to speech models download and load before they can serve a request.\nWatch the app's Logs for progress.\n\n**Change the default models** by setting `SPEECH_STT_MODEL`,\n`SPEECH_TTS_MODEL`, or `SPEECH_TTS_VOICE` in the app's Environment section\nand restarting. Add more models to warm at boot with\n`SPEECH_EXTRA_PRELOAD`.",
+                "checklist": {
+                    "apikey": {
+                        "message": "Get your API key: open a Terminal for this app (the `>_` button) and run `cat /app/data/.secrets/keys.env`. Send it as `Authorization: Bearer <key>` to the /v1 endpoints."
+                    },
+                    "uikey": {
+                        "message": "The web UI at / is open to anyone as a shell: it cannot transcribe or synthesise anything without a key. Paste the same API key into the UI's key box once per browser."
+                    },
+                    "models": {
+                        "message": "Models download on demand into /var/lib/speaches. The default STT and TTS models preload on first boot: watch the app's Logs for progress before relying on them."
+                    }
+                },
+                "dockerImage": "ghcr.io/orcvole/speaches-cloudron@sha256:37c33330a81334b30bdda9d85c36770c69f3d1ffa87e4bf5a947987df63d09f4"
+            }
         },
-        "persistentDirs": [
-          "/var/lib/speaches"
-        ],
-        "memoryLimit": 5368709120,
-        "minBoxVersion": "9.1.0",
-        "manifestVersion": 2,
-        "configurePath": "/",
-        "optionalSso": true,
-        "postInstallMessage": "This app is an **API server with a playground UI**. The domain serves the\nOpenAI-compatible speech API at `/v1` and a small playground UI at `/`.\n\n**Your API key** was generated on first run. Open a Terminal for this app\n(the `>_` button) and run:\n```\ncat /app/data/.secrets/keys.env\n```\nSend it as `Authorization: Bearer <key>` with every `/v1` request.\n\n**The playground UI is open to visit but not to use.** Anyone can load `/`,\nbut it cannot transcribe or synthesise anything without the same key.\nPaste the key into the UI's key box once; your browser remembers it after\nthat.\n\n**First boot is slower than later boots.** The default speech to text and\ntext to speech models download and load before they can serve a request.\nWatch the app's Logs for progress.\n\n**Change the default models** by setting `SPEECH_STT_MODEL`,\n`SPEECH_TTS_MODEL`, or `SPEECH_TTS_VOICE` in the app's Environment section\nand restarting. Add more models to warm at boot with\n`SPEECH_EXTRA_PRELOAD`.",
-        "checklist": {
-          "apikey": {
-            "message": "Get your API key: open a Terminal for this app (the `>_` button) and run `cat /app/data/.secrets/keys.env`. Send it as `Authorization: Bearer <key>` to the /v1 endpoints."
-          },
-          "uikey": {
-            "message": "The web UI at / is open to anyone as a shell: it cannot transcribe or synthesise anything without a key. Paste the same API key into the UI's key box once per browser."
-          },
-          "models": {
-            "message": "Models download on demand into /var/lib/speaches. The default STT and TTS models preload on first boot: watch the app's Logs for progress before relying on them."
-          }
-        },
-        "dockerImage": "ghcr.io/orcvole/speaches-cloudron@sha256:37c33330a81334b30bdda9d85c36770c69f3d1ffa87e4bf5a947987df63d09f4"
-      }
+        "0.1.1": {
+            "manifest": {
+                "id": "io.github.orcvole.speaches",
+                "title": "Speaches",
+                "tagline": "Self-hosted speech to text and text to speech with OpenAI-compatible APIs",
+                "version": "0.1.1",
+                "upstreamVersion": "0.9.0-rc.3",
+                "dockerImage": "ghcr.io/orcvole/speaches-cloudron@sha256:f96f68ce710729b54dc60ddce2ff2f0ef7acf99c117f95411923a576aff8b622",
+                "description": "`<upstream>0.9.0-rc.3</upstream>\n\nSpeaches is a self-hosted speech server with an OpenAI-compatible API. It\nprovides speech to text (transcription and translation) and text to speech,\nand can act as a drop-in backend for tools that already speak the OpenAI\naudio API.\n\n## What it does\n\n- Speech to text using faster-whisper (CTranslate2), through the\n  `/v1/audio/transcriptions` and `/v1/audio/translations` endpoints.\n- Text to speech using Kokoro and Piper voices, through `/v1/audio/speech`.\n- A realtime API at `/v1/realtime` over WebSocket. Upstream also offers a\n  WebRTC transport for this endpoint, but WebRTC is not supported through\n  the platform proxy because it depends on UDP; use the WebSocket transport\n  instead.\n- A small web playground for trying transcription, synthesis, and audio\n  chat without writing any code.\n\n## Performance\n\nThis package runs on CPU only, because Cloudron does not offer GPU\npassthrough. Small and distilled Whisper models transcribe short and medium\naudio workably on CPU; large models and long files are slow. Exact\nthroughput figures for this package are measured on real hardware rather\nthan assumed, and are recorded in the package documentation once\navailable. Treat any number quoted elsewhere as a starting estimate, not a\nguarantee.\n\n## About the upstream project\n\nSpeaches (formerly faster-whisper-server) is a widely used open source\nproject, with thousands of stars and a large number of image pulls, but\ndevelopment has been quiet since April 2026: the sole maintainer has not\npublished a release in 2026, and community issues note the slow pace\ndirectly. This is not a project that is broken or abandoned in a technical\nsense; the exact version packaged here was verified end to end, on CPU,\nbefore release. Treat it as a stable, working release from a project\nbetween periods of active maintenance, and expect any upstream fix for a\nnewly found problem to take time to arrive, if it arrives at all.\n\n## Licence\n\nSpeaches is MIT licensed. See LICENSE for the full text.\n",
+                "changelog": "- Security update. Two CRITICAL and about thirty HIGH vulnerabilities in the bundled Python\n  packages are fixed, including anyio and h11 (CRITICAL), starlette, pillow, cryptography, urllib3,\n  python-multipart, gradio and protobuf. Speaches itself is unchanged (still 0.9.0-rc.3): the\n  dependency set is upstream's own, re-resolved within speaches' own version constraints. No fixable\n  HIGH or CRITICAL issue remains in the app's own packages; what a scanner still reports comes from\n  the Cloudron base image.\n- The web playground moves to Gradio 6. Two small source fixes keep it working: the audio chat tab,\n  and the script that remembers your API key in the browser.\n- Base image cloudron/base 5.0.0 to 5.1.0: the Ubuntu 24.04.4 point release, with its OS security\n  updates.\n",
+                "author": "OrcVole",
+                "packagerName": "OrcVole",
+                "packagerUrl": "https://github.com/OrcVole/speaches-cloudron",
+                "contactEmail": "Most+github@OrcadianVole.com",
+                "website": "https://github.com/OrcVole/speaches-cloudron",
+                "icon": "file://logo.png",
+                "iconUrl": "https://raw.githubusercontent.com/OrcVole/speaches-cloudron/main/logo.png",
+                "tags": [
+                    "speech",
+                    "whisper",
+                    "tts",
+                    "stt",
+                    "ai",
+                    "audio"
+                ],
+                "mediaLinks": [
+                    "https://raw.githubusercontent.com/OrcVole/speaches-cloudron/main/screenshots/overview.png"
+                ],
+                "httpPort": 8000,
+                "healthCheckPath": "/healthz",
+                "addons": {
+                    "localstorage": {}
+                },
+                "persistentDirs": [
+                    "/var/lib/speaches"
+                ],
+                "memoryLimit": 5368709120,
+                "minBoxVersion": "9.1.0",
+                "manifestVersion": 2,
+                "configurePath": "/",
+                "optionalSso": true,
+                "postInstallMessage": "This app is an **API server with a playground UI**. The domain serves the\nOpenAI-compatible speech API at `/v1` and a small playground UI at `/`.\n\n**Your API key** was generated on first run. Open a Terminal for this app\n(the `>_` button) and run:\n\n```\ncat /app/data/.secrets/keys.env\n```\n\nSend it as `Authorization: Bearer <key>` with every `/v1` request.\n\n**The playground UI is open to visit but not to use.** Anyone can load `/`,\nbut it cannot transcribe or synthesise anything without the same key.\nPaste the key into the UI's key box once; your browser remembers it after\nthat.\n\n**First boot is slower than later boots.** The default speech to text and\ntext to speech models download and load before they can serve a request.\nWatch the app's Logs for progress.\n\n**Change the default models** by setting `SPEECH_STT_MODEL`,\n`SPEECH_TTS_MODEL`, or `SPEECH_TTS_VOICE` in the app's Environment section\nand restarting. Add more models to warm at boot with\n`SPEECH_EXTRA_PRELOAD`.\n",
+                "checklist": {
+                    "apikey": {
+                        "message": "Get your API key: open a Terminal for this app (the `>_` button) and run `cat /app/data/.secrets/keys.env`. Send it as `Authorization: Bearer <key>` to the /v1 endpoints."
+                    },
+                    "uikey": {
+                        "message": "The web UI at / is open to anyone as a shell: it cannot transcribe or synthesise anything without a key. Paste the same API key into the UI's key box once per browser."
+                    },
+                    "models": {
+                        "message": "Models download on demand into /var/lib/speaches. The default STT and TTS models preload on first boot: watch the app's Logs for progress before relying on them."
+                    }
+                }
+            },
+            "creationDate": "Wed, 23 Sep 2026 20:50:24 GMT",
+            "ts": 1790196624000,
+            "publishState": "published"
+        }
     }
-  }
 }
