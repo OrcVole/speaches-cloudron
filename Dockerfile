@@ -72,6 +72,9 @@ RUN git clone --depth 1 --branch "v${SPEACHES_VERSION}" \
 # h11, and fastapi, which caps starlette), so every version satisfies speaches' OWN declared
 # constraints; nothing is forced. It is only valid for the commit it was resolved against: bumping
 # SPEACHES_VERSION without re-resolving it fails here rather than shipping a lock for other code.
+# RE-RESOLVING: PyAV has removed its 14.4.0 wheels from the PyPI index (the files still exist on
+# files.pythonhosted.org), so a re-lock rewrites av as sdist-only and the build then tries to compile
+# it against ffmpeg and fails. Copy av's [[package]] block, wheels included, back from upstream's lock.
 COPY overlay/uv.lock /tmp/uv.lock.overlay
 RUN test "$(git rev-parse HEAD)" = "24f209c90218187747a9205f0b84bc06b42ce775" \
       || { echo "overlay/uv.lock was resolved for speaches 24f209c9, not $(git rev-parse HEAD): re-resolve it"; exit 1; } \
