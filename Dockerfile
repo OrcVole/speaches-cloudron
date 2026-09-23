@@ -1,6 +1,6 @@
 # Speaches Cloudron package: two-stage CPU build (ADR 0002, shape 1).
 #
-# Both stages pin cloudron/base:5.0.0 by digest (Ubuntu 24.04, Python
+# Both stages pin cloudron/base:5.1.0 by digest (Ubuntu 24.04, Python
 # 3.12.3). The builder clones upstream at the pinned release tag and runs
 # uv sync against the shipped uv.lock, reproducing upstream's own
 # dependency set exactly, including the deliberate onnxruntime-gpu
@@ -18,7 +18,7 @@
 
 ARG SPEACHES_VERSION=0.9.0-rc.3
 
-FROM cloudron/base:5.0.0@sha256:04fd70dbd8ad6149c19de39e35718e024417c3e01dc9c6637eaf4a41ec4e596c AS builder
+FROM cloudron/base:5.1.0@sha256:1c0666c9abe9e2090d33686826d4e97769b799124573118d41e0d7485135748e AS builder
 ARG SPEACHES_VERSION
 
 # uv binary, upstream's own method (docs/decisions/0002): copied from
@@ -39,7 +39,7 @@ ARG SPEACHES_VERSION
 # meant.
 COPY --from=ghcr.io/astral-sh/uv:0.8.14@sha256:f3660c56d5b08d6c516360981bedc439f499b9bf37f46a216018da3777a74011 /uv /usr/local/bin/uv
 
-# cloudron/base:5.0.0 already carries python3.12, python3.12-venv, git,
+# cloudron/base:5.1.0 already carries python3.12, python3.12-venv, git,
 # and ca-certificates (confirmed empirically before writing this
 # Dockerfile: dpkg -l shows python3.12-venv already installed, and git
 # clone / uv sync both reach github.com and pypi.org over HTTPS with no
@@ -66,6 +66,38 @@ RUN git clone --depth 1 --branch "v${SPEACHES_VERSION}" \
 # (Path("model_aliases.json"); StaticFiles(directory="realtime-console/
 # dist")), not via the venv, so both must still be present alongside it
 # at runtime in the same layout.
+# Security overlay (2026-09-23): upstream's uv.lock at this tag pins anyio 4.9.0 and h11 0.14.0 (both
+# CRITICAL CVEs) and fourteen packages with HIGH ones. overlay/uv.lock is upstream's lock re-resolved
+# with uv 0.8.14 (`uv lock --upgrade-package ...` for exactly those packages, plus httpcore, which caps
+# h11, and fastapi, which caps starlette), so every version satisfies speaches' OWN declared
+# constraints; nothing is forced. It is only valid for the commit it was resolved against: bumping
+# SPEACHES_VERSION without re-resolving it fails here rather than shipping a lock for other code.
+COPY overlay/uv.lock /tmp/uv.lock.overlay
+RUN test "$(git rev-parse HEAD)" = "24f209c90218187747a9205f0b84bc06b42ce775" \
+      || { echo "overlay/uv.lock was resolved for speaches 24f209c9, not $(git rev-parse HEAD): re-resolve it"; exit 1; } \
+    && cp /tmp/uv.lock.overlay uv.lock
+
+# gradio 6 source fixes. The overlay's gradio 6.15.1 is the only line with fixes for gradio's own three
+# HIGH CVEs, and gradio 5 caps pillow below 12 and starlette below 1.0, which would leave thirteen
+# pillow and two starlette HIGHs open too. speaches at this commit is written for gradio 5 in two places:
+#   1. gr.ChatInterface(type="messages"): gradio 6 removed the argument (messages is the only format)
+#      and the app factory dies with "unexpected keyword argument 'type'", taking the API down with it.
+#   2. gr.Blocks(head=...): gradio 6 moved head to launch()/mount_gradio_app(), and mount_gradio_app
+#      overwrites blocks.head with its own argument, so the script defining loadApiKey/saveApiKey
+#      silently vanished and the playground's API key field broke. Pass it through explicitly.
+# Each edit must match exactly once or the build fails; the commit guard above pins the source.
+RUN python3 - <<'PY'
+from pathlib import Path
+def edit(path, old, new):
+    p = Path(path); s = p.read_text(); n = s.count(old)
+    assert n == 1, f"{path}: expected 1 match for {old!r}, found {n}"
+    p.write_text(s.replace(old, new)); print(f"patched {path}")
+edit("src/speaches/ui/tabs/audio_chat.py", '            type="messages",\n', "")
+edit("src/speaches/main.py",
+     'app = gr.mount_gradio_app(app, create_gradio_demo(config), path="")',
+     'demo = create_gradio_demo(config)\n        app = gr.mount_gradio_app(app, demo, path="", head=demo._deprecated_head)')
+PY
+
 RUN /usr/local/bin/uv sync --frozen --compile-bytecode --no-dev
 
 # Build gate: proves imports and linkage only. The real gate is the
@@ -92,7 +124,7 @@ PY
 
 # ---------------------------------------------------------------------
 
-FROM cloudron/base:5.0.0@sha256:04fd70dbd8ad6149c19de39e35718e024417c3e01dc9c6637eaf4a41ec4e596c
+FROM cloudron/base:5.1.0@sha256:1c0666c9abe9e2090d33686826d4e97769b799124573118d41e0d7485135748e
 ARG SPEACHES_VERSION
 # Not named SPEACHES_VERSION at runtime: upstream's own config reads
 # bare, unprefixed env var names (docs/decisions/0006-env-namespace.md),
@@ -116,7 +148,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 
 # ffmpeg is required: upstream needs it for mp3 and other non-wav audio
 # formats. ca-certificates and curl are already present on
-# cloudron/base:5.0.0, named explicitly anyway for clarity and to
+# cloudron/base:5.1.0, named explicitly anyway for clarity and to
 # survive a future base image that might drop them.
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates curl ffmpeg \
