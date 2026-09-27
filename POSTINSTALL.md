@@ -4,7 +4,7 @@ OpenAI-compatible speech API at `/v1` and a small playground UI at `/`.
 **Your API key** was generated on first run. Open a Terminal for this app
 (the `>_` button) and run:
 
-```
+```bash
 cat /app/data/.secrets/keys.env
 ```
 

@@ -211,7 +211,7 @@ load and instruction set.
 The only test that proves what a stranger experiences. Installed with
 nothing but the public URL:
 
-```
+```bash
 cloudron install --versions-url \
   https://raw.githubusercontent.com/OrcVole/speaches-cloudron/main/CloudronVersions.json \
   --location <throwaway>
@@ -232,7 +232,7 @@ Torn down afterwards.
 
 The first three attempts failed with:
 
-```
+```text
 Failed to get community app: 404 message: Could not resolve
 CloudronVersions.json from URL
 ```

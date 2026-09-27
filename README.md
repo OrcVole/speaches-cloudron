@@ -14,14 +14,14 @@ on the upstream project's current pace of development.
 2. Open a Terminal for the app (the `>_` button in the dashboard) and read
    the generated API key:
 
-   ```
+   ```bash
    cat /app/data/.secrets/keys.env
    ```
 
 3. Call the API with the key as a bearer token. Example transcription
    request, with `example.com` standing in for the app's real domain:
 
-   ```
+   ```bash
    curl https://example.com/v1/audio/transcriptions \
      -H "Authorization: Bearer <key>" \
      -F file=@sample.wav \
@@ -44,7 +44,7 @@ below).
 LibreChat's `librechat.yaml` speech configuration takes full endpoint
 URLs, not a base URL. Point transcription and synthesis at:
 
-```
+```text
 https://example.com/v1/audio/transcriptions
 https://example.com/v1/audio/speech
 ```
